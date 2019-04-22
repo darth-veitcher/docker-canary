@@ -1,0 +1,48 @@
+#!/bin/sh
+# https://nbsoftsolutions.com/blog/routing-select-docker-containers-through-wireguard-vpn
+set -euo pipefail
+
+# Clearnet IP set from Environment and represents what we don't
+# want to ever see...
+CLEARNET_IP="${CLEARNET_IP//\'}"
+echo "$(date): Clearnet IP is $CLEARNET_IP"
+echo "$(date): Container IP is $(curl --silent --show-error --retry 10 --fail 'https://api.ipify.org?format=text')"
+
+# Our IP address should be the VPN endpoint for the duration of the
+# container, so this function will give us a true or false if our IP is
+# actually the same as the VPN's
+function has_vpn_ip {
+    IP=$(curl --silent --show-error --retry 10 --fail 'https://api.ipify.org?format=text')
+    echo "$(date): Container IP is $IP"
+    [ $IP != $CLEARNET_IP ]  # want to return IP!=CLEARNET as true (return 0)
+}
+
+# Try to restart the VPN via Docker CLI
+function restart_vpn {
+    echo "$(date): VPN IP address not detected"
+    echo "$(date): Attempting restart of OpenVPN Client"
+    # docker stop openvpn >> /dev/null 2>&1 && docker start openvpn >> /dev/null 2>&1
+    docker restart openvpn >> /dev/null 2>&1
+}
+
+function restart_client() {
+    echo "$(date): Restarting $1"
+    docker restart $1 >> /dev/null 2>&1
+}
+
+# Wait 10secs for VPN to come up
+sleep 10
+
+# Every [x] seconds we check to our IP address
+while true
+do
+    echo "$(date): ## Entering Canary mode"
+    while has_vpn_ip
+    do
+        echo "VPN still active. Sleeping..."
+        sleep 10
+    done
+    restart_vpn
+    sleep 10
+    restart_client 'canary'
+done
