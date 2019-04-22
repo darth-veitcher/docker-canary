@@ -60,5 +60,27 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+Example log output (see `openvpn` container restarting)
+
+```
+canary        | Sun Apr 21 21:42:18 UTC 2019: Container IP is 82.24.111.21
+canary        | Sun Apr 21 21:42:29 UTC 2019: ## Entering Canary mode
+canary        | Sun Apr 21 21:42:35 UTC 2019: Container IP is 82.102.27.171
+canary        | Sun Apr 21 21:42:35 UTC 2019: VPN IP address not detected
+openvpn       | Sun Apr 21 21:42:35 2019 event_wait : Interrupted system call (code=4)
+openvpn       | Sun Apr 21 21:42:35 2019 SIGTERM received, sending exit notification to peer
+...
+openvpn       | Sun Apr 21 21:42:40 2019 SIGTERM[soft,exit-with-notification] received, process exiting
+openvpn exited with code 0
+openvpn       | Sun Apr 21 21:42:43 2019 TLS: Initial packet from [AF_INET]82.102.27.170:443, sid=74875991 eab00940
+...
+openvpn       | Sun Apr 21 21:42:51 2019 Initialization Sequence Completed
+canary        | Sun Apr 21 21:42:35 UTC 2019: Attempting restart of OpenVPN Client
+canary        | Sun Apr 21 21:42:53 UTC 2019: Restarting canary
+canary exited with code 137
+canary        | Sun Apr 21 21:43:03 UTC 2019: Container IP is 82.102.27.171
+canary        | Sun Apr 21 21:43:19 UTC 2019: ## Entering Canary mode
+```
+
 ## TODO
 At the moment the containers to restart are hardcoded into the `start-canary` script. Going forwards it would be best to separate out this into a separate, user-mountable, file as all containers will lose connectivity once the vpn is restarted.
