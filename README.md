@@ -50,7 +50,7 @@ services:
   # a VPN. Check the IP address from the command when containers are up.
   canary:
     container_name: 'canary'
-    image: saracen9/docker-canary
+    image: saracen9/canary
     environment:
       - CLEARNET_IP=${CLEARNET_IP}
     network_mode: "service:openvpn"
